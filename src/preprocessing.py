@@ -341,6 +341,10 @@ class TextPreprocessor:
         """
         Load a saved tokenizer from disk.
         
+        Supports two formats:
+        1. Dictionary format (new): {'tokenizer': ..., 'vocab_size': ..., ...}
+        2. Direct Tokenizer object (legacy): Tokenizer instance
+        
         Args:
             filepath: Path to pickle file
             
@@ -350,13 +354,35 @@ class TextPreprocessor:
         with open(filepath, 'rb') as f:
             data = pickle.load(f)
         
-        instance = cls(
-            vocab_size=data['vocab_size'],
-            sequence_length=data['sequence_length'],
-            oov_token=data['oov_token']
-        )
-        instance.tokenizer = data['tokenizer']
-        instance._is_fitted = data['is_fitted']
+        # Check if data is a dictionary (new format) or direct Tokenizer (legacy)
+        if isinstance(data, dict) and 'tokenizer' in data:
+            # New format: dictionary with metadata
+            instance = cls(
+                vocab_size=data.get('vocab_size', 20000),
+                sequence_length=data.get('sequence_length', 30),
+                oov_token=data.get('oov_token', '<unk>')
+            )
+            instance.tokenizer = data['tokenizer']
+            instance._is_fitted = data.get('is_fitted', True)
+        else:
+            # Legacy format: direct Tokenizer object
+            instance = cls(
+                vocab_size=20000,
+                sequence_length=30,
+                oov_token='<unk>'
+            )
+            # Handle if it's a Tokenizer directly or wrapped differently
+            if hasattr(data, 'word_index'):
+                instance.tokenizer = data
+            elif isinstance(data, dict) and any(hasattr(v, 'word_index') for v in data.values() if v is not None):
+                # Find the tokenizer in the dict
+                for v in data.values():
+                    if hasattr(v, 'word_index'):
+                        instance.tokenizer = v
+                        break
+            else:
+                raise ValueError(f"Could not find valid Tokenizer in {filepath}")
+            instance._is_fitted = True
         
         print(f"Tokenizer loaded from {filepath}")
         return instance

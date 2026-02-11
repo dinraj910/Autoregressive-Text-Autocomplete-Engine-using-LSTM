@@ -150,29 +150,63 @@ def load_model_and_tokenizer():
     
     Uses Streamlit's cache_resource to load only once
     and share across all sessions.
+    
+    Searches for model files in multiple locations:
+    1. models/ directory (standard)
+    2. project root (legacy)
     """
     models_dir = os.path.join(project_root, 'models')
     
-    # Check if model files exist
-    model_path = os.path.join(models_dir, 'autocomplete_lstm.h5')
-    tokenizer_path = os.path.join(models_dir, 'tokenizer.pkl')
+    # Possible model file locations
+    model_candidates = [
+        os.path.join(models_dir, 'autocomplete_lstm.h5'),
+        os.path.join(project_root, 'autocomplete_lstm.h5'),
+        os.path.join(project_root, 'autocomplete_lstm_fixed.h5'),
+    ]
     
-    if not os.path.exists(model_path):
-        return None, None, f"Model file not found: {model_path}"
+    # Possible tokenizer file locations
+    tokenizer_candidates = [
+        os.path.join(models_dir, 'tokenizer.pkl'),
+        os.path.join(project_root, 'tokenizer.pkl'),
+        os.path.join(project_root, 'tokenizer (1).pkl'),
+    ]
     
-    if not os.path.exists(tokenizer_path):
-        return None, None, f"Tokenizer file not found: {tokenizer_path}"
+    # Find model file
+    model_path = None
+    for path in model_candidates:
+        if os.path.exists(path):
+            model_path = path
+            break
+    
+    # Find tokenizer file
+    tokenizer_path = None
+    for path in tokenizer_candidates:
+        if os.path.exists(path):
+            tokenizer_path = path
+            break
+    
+    if model_path is None:
+        return None, None, f"Model file not found. Searched: {model_candidates}"
+    
+    if tokenizer_path is None:
+        return None, None, f"Tokenizer file not found. Searched: {tokenizer_candidates}"
     
     try:
-        # Load model
-        loader = create_model_loader(models_dir)
-        model = loader.model
-        preprocessor = loader.preprocessor
+        # Load model directly
+        import tensorflow as tf
+        tf.get_logger().setLevel('ERROR')
+        
+        print(f"Loading model from: {model_path}")
+        model = tf.keras.models.load_model(model_path)
+        
+        print(f"Loading tokenizer from: {tokenizer_path}")
+        preprocessor = TextPreprocessor.load(tokenizer_path)
         
         return model, preprocessor, None
     
     except Exception as e:
-        return None, None, str(e)
+        import traceback
+        return None, None, f"{str(e)}\n{traceback.format_exc()}"
 
 
 def initialize_session_state():
