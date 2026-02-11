@@ -1,0 +1,18 @@
+{
+  "vocab_size": 20000,
+  "sequence_length": 30,
+  "embedding_dim": 128,
+  "lstm_units": 256,
+  "num_lstm_layers": 2,
+  "dropout_rate": 0.3,
+  "batch_size": 64,
+  "epochs": 20,
+  "learning_rate": 0.001,
+  "description": "LSTM Language Model for Text Autocomplete",
+  "dataset": "WikiText-2 Raw",
+  "notes": {
+    "training": "This config is used during Colab training",
+    "inference": "Model and tokenizer files must match this config",
+    "vocab_note": "actual_vocab_size may be less if dataset has fewer unique words"
+  }
+}
