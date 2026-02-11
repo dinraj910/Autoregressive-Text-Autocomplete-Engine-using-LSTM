@@ -1,0 +1,22 @@
+# Core ML/DL
+tensorflow>=2.10.0
+numpy>=1.21.0
+
+# NLP & Data
+datasets>=2.14.0  # HuggingFace datasets for WikiText-2
+
+# Web Application
+streamlit>=1.28.0
+
+# Utilities
+pickle5>=0.0.11;python_version<"3.8"  # Pickle compatibility for older Python
+
+# Development (optional)
+jupyter>=1.0.0
+ipywidgets>=8.0.0
+tqdm>=4.65.0
+
+# Note: For Google Colab training, these are pre-installed:
+# - tensorflow
+# - numpy
+# - datasets (install with: !pip install datasets)
