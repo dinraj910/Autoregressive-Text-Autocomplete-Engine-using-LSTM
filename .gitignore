@@ -37,10 +37,6 @@ env/
 *.swo
 *~
 
-# Jupyter Notebook
-.ipynb_checkpoints/
-*.ipynb_checkpoints
-
 # Model files (large files - download separately)
 models/*.h5
 models/*.pkl
